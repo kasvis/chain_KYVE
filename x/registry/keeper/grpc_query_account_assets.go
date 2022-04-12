@@ -11,6 +11,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// AccountAssets returns an overview of the balances of the given user regarding the protocol nodes
+// This includes the current balance, current staking, delegation, funding and unbondings.
+// Supports Pagination
 func (k Keeper) AccountAssets(goCtx context.Context, req *types.QueryAccountAssetsRequest) (*types.QueryAccountAssetsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
