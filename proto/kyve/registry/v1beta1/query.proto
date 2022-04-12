@@ -395,14 +395,12 @@ message QueryAccountFundedListResponse {
 
 // Funded ...
 message Funded {
-  // fund_id ...
-  string fund_id = 1;
   // account ...
-  string account = 2;
+  string account = 1;
   // amount ...
-  uint64 amount = 3;
+  uint64 amount = 2;
   // pool ...
-  kyve.registry.v1beta1.Pool pool = 4;
+  kyve.registry.v1beta1.Pool pool = 3;
 }
 
 // QueryAccountStakedListRequest is the request type for the Query/AccountStakedList RPC method.
