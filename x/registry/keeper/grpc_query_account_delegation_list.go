@@ -29,12 +29,12 @@ func (k Keeper) AccountDelegationList(goCtx context.Context, req *types.QueryAcc
 	// TODO find indexing solution for performance
 	pageRes, err := query.FilteredPaginate(delegatorStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 
-		if accumulate {
-			// Check if entry belongs to given address (delegator)
-			if bytes.Compare(key[53:96], []byte(req.Address)) != 0 {
-				return false, nil
-			}
+		// Check if entry belongs to given address (delegator)
+		if bytes.Compare(key[53:96], []byte(req.Address)) != 0 {
+			return false, nil
+		}
 
+		if accumulate {
 			var delegator types.Delegator
 			if err := k.cdc.Unmarshal(value, &delegator); err != nil {
 				return false, nil
