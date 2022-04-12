@@ -31,7 +31,7 @@ func CmdAccountStakersDelegationList() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryAccountStakersDelegationListRequest{
+			params := &types.QueryDelegatorsByPoolAndStakerRequest{
 
 				PoolId: reqPoolId,
 				Staker: reqStaker,
@@ -43,7 +43,7 @@ func CmdAccountStakersDelegationList() *cobra.Command {
 			}
 			params.Pagination = pageReq
 
-			res, err := queryClient.AccountStakersDelegationList(cmd.Context(), params)
+			res, err := queryClient.DelegatorsByPoolAndStaker(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

@@ -87,12 +87,12 @@ service Query {
 
   // STATS FOR USER ACCOUNT
 
-  // AccountAssets ...
+  // AccountAssets returns an overview of the sum of all balances for a given user. e.g. balance, staking, funding, etc.
   rpc AccountAssets(QueryAccountAssetsRequest) returns (QueryAccountAssetsResponse) {
     option (google.api.http).get = "/kyve/registry/v1beta1/account_assets/{address}";
   }
 
-  // AccountFundedList ...
+  // AccountFundedList returns all pools the given user has funded into.
   rpc AccountFundedList(QueryAccountFundedListRequest) returns (QueryAccountFundedListResponse) {
     option (google.api.http).get = "/kyve/registry/v1beta1/account_funded_list/{address}";
   }
@@ -119,8 +119,8 @@ service Query {
     option (google.api.http).get = "/kyve/registry/v1beta1/delegator/{delegator}/{staker}/{pool_id}";
   }
 
-  // AccountStakersDelegationList ...
-  rpc AccountStakersDelegationList(QueryAccountStakersDelegationListRequest) returns (QueryAccountStakersDelegationListResponse) {
+  // DelegatorsByPoolAndStaker ...
+  rpc DelegatorsByPoolAndStaker(QueryDelegatorsByPoolAndStakerRequest) returns (QueryDelegatorsByPoolAndStakerResponse) {
     option (google.api.http).get = "/kyve/registry/v1beta1/delegators_by_pool_and_staker/{pool_id}/{staker}";
   }
 
@@ -487,8 +487,8 @@ message QueryDelegatorResponse {
   kyve.registry.v1beta1.Delegator delegator = 1 [(gogoproto.nullable) = false];
 }
 
-// QueryAccountStakersDelegationListRequest is the request type for the Query/AccountStakersDelegationList RPC method.
-message QueryAccountStakersDelegationListRequest {
+// QueryDelegatorsByPoolAndStakerRequest is the request type for the Query/DelegatorsByPoolAndStaker RPC method.
+message QueryDelegatorsByPoolAndStakerRequest {
   // pagination defines an optional pagination for the request.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
   // pool_id ...
@@ -497,8 +497,8 @@ message QueryAccountStakersDelegationListRequest {
   string staker = 3;
 }
 
-// QueryAccountStakersDelegationListResponse is the response type for the Query/AccountStakersDelegationList RPC method.
-message QueryAccountStakersDelegationListResponse {
+// QueryDelegatorsByPoolAndStakerResponse is the response type for the Query/DelegatorsByPoolAndStaker RPC method.
+message QueryDelegatorsByPoolAndStakerResponse {
   // delegators ...
   repeated kyve.registry.v1beta1.StakerDelegatorResponse delegators = 1 [(gogoproto.nullable) = false];
   // pool ...

@@ -12,7 +12,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) AccountStakersDelegationList(goCtx context.Context, req *types.QueryAccountStakersDelegationListRequest) (*types.QueryAccountStakersDelegationListResponse, error) {
+// DelegatorsByPoolAndStaker returns all delegators for a specific pool that delegated to the given staker address
+// It also returns the pool-object and the delegation information for that pool
+// Pagination is supported
+func (k Keeper) DelegatorsByPoolAndStaker(goCtx context.Context, req *types.QueryDelegatorsByPoolAndStakerRequest) (*types.QueryDelegatorsByPoolAndStakerResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -27,21 +30,21 @@ func (k Keeper) AccountStakersDelegationList(goCtx context.Context, req *types.Q
 	var delegators []types.StakerDelegatorResponse
 
 	store := ctx.KVStore(k.storeKey)
-	delegatorStore := prefix.NewStore(store, types.KeyPrefix(types.DelegatorKeyPrefix))
+	// Build prefix. Store is already indexed in an optimal way
+	prefixBuilder := types.KeyPrefixBuilder{Key: types.KeyPrefix(types.DelegatorKeyPrefix)}.AInt(pool.Id).AString(req.Staker).Key
+	delegatorStore := prefix.NewStore(store, prefixBuilder)
 
 	pageRes, err := query.FilteredPaginate(delegatorStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
-		var delegator types.Delegator
-
-		if err := k.cdc.Unmarshal(value, &delegator); err != nil {
-			return false, nil
-		}
-
-		if delegator.Staker != req.Staker {
-			return false, nil
-		}
 
 		if accumulate {
 
+			var delegator types.Delegator
+
+			if err := k.cdc.Unmarshal(value, &delegator); err != nil {
+				return false, nil
+			}
+
+			// Calculate current rewards for the delegator
 			f1 := F1Distribution{
 				k:                k,
 				ctx:              ctx,
@@ -61,13 +64,13 @@ func (k Keeper) AccountStakersDelegationList(goCtx context.Context, req *types.Q
 		return true, nil
 	})
 
-	delegationPoolData, _ := k.GetDelegationPoolData(ctx, pool.Id, req.Staker)
-
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryAccountStakersDelegationListResponse{
+	delegationPoolData, _ := k.GetDelegationPoolData(ctx, pool.Id, req.Staker)
+
+	return &types.QueryDelegatorsByPoolAndStakerResponse{
 		Delegators:         delegators,
 		Pool:               &pool,
 		DelegationPoolData: &delegationPoolData,
