@@ -31,16 +31,6 @@ service Query {
     option (google.api.http).get = "/kyve/registry/v1beta1/pools";
   }
 
-  // FundingAmount ...
-  rpc FundingAmount(QueryFundingAmountRequest) returns (QueryFundingAmountResponse) {
-    option (google.api.http).get = "/kyve/registry/v1beta1/funding_amount/{id}/{funder}";
-  }
-
-  // StakingAmount ...
-  rpc StakingAmount(QueryStakingAmountRequest) returns (QueryStakingAmountResponse) {
-    option (google.api.http).get = "/kyve/registry/v1beta1/staking_amount/{id}/{staker}";
-  }
-
   // FundersList ...
   rpc FundersList(QueryFundersListRequest) returns (QueryFundersListResponse) {
     option (google.api.http).get = "/kyve/registry/v1beta1/funders_list/{id}";
@@ -114,11 +104,6 @@ service Query {
 
   // DELEGATION
 
-  // Delegator ...
-  rpc Delegator(QueryDelegatorRequest) returns (QueryDelegatorResponse) {
-    option (google.api.http).get = "/kyve/registry/v1beta1/delegator/{delegator}/{staker}/{pool_id}";
-  }
-
   // DelegatorsByPoolAndStaker ...
   rpc DelegatorsByPoolAndStaker(QueryDelegatorsByPoolAndStakerRequest) returns (QueryDelegatorsByPoolAndStakerResponse) {
     option (google.api.http).get = "/kyve/registry/v1beta1/delegators_by_pool_and_staker/{pool_id}/{staker}";
@@ -173,34 +158,6 @@ message QueryPoolsResponse {
   repeated kyve.registry.v1beta1.Pool pools = 1 [(gogoproto.nullable) = false];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-// QueryFundingAmountRequest is the request type for the Query/FundingAmount RPC method.
-message QueryFundingAmountRequest {
-  // id defines the unique ID of the pool.
-  uint64 id = 1;
-  // funder ...
-  string funder = 2;
-}
-
-// QueryFundingAmountResponse is the response type for the Query/FundingAmount RPC method.
-message QueryFundingAmountResponse {
-  // amount ...
-  uint64 amount = 1;
-}
-
-// QueryStakingAmountRequest is the request type for the Query/StakingAmount RPC method.
-message QueryStakingAmountRequest {
-  // id defines the unique ID of the pool.
-  uint64 id = 1;
-  // staker ...
-  string staker = 2;
-}
-
-// QueryStakingAmountResponse is the response type for the Query/StakingAmount RPC method.
-message QueryStakingAmountResponse {
-  // amount ...
-  uint64 amount = 1;
 }
 
 // QueryFundersListRequest is the request type for the Query/FundersList RPC method.
@@ -468,22 +425,6 @@ message DelegatorResponse {
 }
 
 // DELEGATION
-
-// QueryDelegatorRequest is the request type for the Query/Delegator RPC method.
-message QueryDelegatorRequest {
-  // delegator ...
-  string delegator = 1;
-  // staker ...
-  string staker = 2;
-  // pool_id defines the unique ID of the pool.
-  uint64 pool_id = 3;
-}
-
-// QueryDelegatorResponse is the response type for the Query/Delegator RPC method.
-message QueryDelegatorResponse {
-  // delegator ...
-  kyve.registry.v1beta1.Delegator delegator = 1 [(gogoproto.nullable) = false];
-}
 
 // QueryDelegatorsByPoolAndStakerRequest is the request type for the Query/DelegatorsByPoolAndStaker RPC method.
 message QueryDelegatorsByPoolAndStakerRequest {
