@@ -13985,9 +13985,11 @@ paths:
           type: boolean
       tags:
         - Query
-  '/kyve/registry/v1beta1/funders_list/{id}':
+  '/kyve/registry/v1beta1/funders_list/{poolId}':
     get:
-      summary: FundersList ...
+      summary: >-
+        FundersList returns all funder addresses with their corresponding
+        funding amount for a given pool
       operationId: KyveRegistryV1Beta1FundersList
       responses:
         '200':
@@ -14035,8 +14037,8 @@ paths:
                       type: string
                   additionalProperties: {}
       parameters:
-        - name: id
-          description: id defines the unique ID of the pool.
+        - name: poolId
+          description: pool_id defines the unique ID of the pool.
           in: path
           required: true
           type: string
@@ -15125,9 +15127,11 @@ paths:
           type: boolean
       tags:
         - Query
-  '/kyve/registry/v1beta1/stakers_list/{id}':
+  '/kyve/registry/v1beta1/stakers_list/{poolId}':
     get:
-      summary: StakersList ...
+      summary: >-
+        StakersList returns all staker addresses with their corresponding
+        staking amount for a given pool
       operationId: KyveRegistryV1Beta1StakersList
       responses:
         '200':
@@ -15198,8 +15202,8 @@ paths:
                       type: string
                   additionalProperties: {}
       parameters:
-        - name: id
-          description: id defines the unique ID of the pool.
+        - name: poolId
+          description: pool_id defines the unique ID of the pool.
           in: path
           required: true
           type: string

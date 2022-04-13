@@ -31,14 +31,14 @@ service Query {
     option (google.api.http).get = "/kyve/registry/v1beta1/pools";
   }
 
-  // FundersList ...
+  // FundersList returns all funder addresses with their corresponding funding amount for a given pool
   rpc FundersList(QueryFundersListRequest) returns (QueryFundersListResponse) {
-    option (google.api.http).get = "/kyve/registry/v1beta1/funders_list/{id}";
+    option (google.api.http).get = "/kyve/registry/v1beta1/funders_list/{pool_id}";
   }
 
-  // StakersList ...
+  // StakersList returns all staker addresses with their corresponding staking amount for a given pool
   rpc StakersList(QueryStakersListRequest) returns (QueryStakersListResponse) {
-    option (google.api.http).get = "/kyve/registry/v1beta1/stakers_list/{id}";
+    option (google.api.http).get = "/kyve/registry/v1beta1/stakers_list/{pool_id}";
   }
 
   // WARP
@@ -162,8 +162,8 @@ message QueryPoolsResponse {
 
 // QueryFundersListRequest is the request type for the Query/FundersList RPC method.
 message QueryFundersListRequest {
-  // id defines the unique ID of the pool.
-  uint64 id = 1;
+  // pool_id defines the unique ID of the pool.
+  uint64 pool_id = 1;
 }
 
 // QueryFundersListResponse is the response type for the Query/FundersList RPC method.
@@ -174,8 +174,8 @@ message QueryFundersListResponse {
 
 // QueryStakersListRequest is the request type for the Query/StakersList RPC method.
 message QueryStakersListRequest {
-  // id defines the unique ID of the pool.
-  uint64 id = 1;
+  // pool_id defines the unique ID of the pool.
+  uint64 pool_id = 1;
 }
 
 // QueryStakersListResponse is the response type for the Query/StakersList RPC method.
