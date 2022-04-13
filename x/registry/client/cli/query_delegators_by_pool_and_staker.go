@@ -12,9 +12,9 @@ import (
 
 var _ = strconv.Itoa(0)
 
-func CmdAccountStakersDelegationList() *cobra.Command {
+func CmdDelegatorsByPoolAndStaker() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "account-stakers-delegation-list [pool-id] [staker]",
+		Use:   "delegators-by-pool-and-staker [pool-id] [staker]",
 		Short: "Query account_stakers_delegation_list",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {

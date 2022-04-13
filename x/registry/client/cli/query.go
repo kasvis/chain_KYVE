@@ -2,15 +2,10 @@ package cli
 
 import (
 	"fmt"
-	// "strings"
-
-	"github.com/spf13/cobra"
-
-	"github.com/cosmos/cosmos-sdk/client"
-	// "github.com/cosmos/cosmos-sdk/client/flags"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/KYVENetwork/chain/x/registry/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/spf13/cobra"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -23,6 +18,9 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
+
+	// PARAMS
+	cmd.AddCommand(CmdParams())
 
 	// POOL
 	cmd.AddCommand(CmdShowPool())
@@ -41,10 +39,15 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdStakeInfo())
 
 	// STATS FOR USER ACCOUNT
+	cmd.AddCommand(CmdAccountAssets())
 	cmd.AddCommand(CmdAccountFundedList())
 	cmd.AddCommand(CmdAccountStakedList())
-	cmd.AddCommand(CmdAccountStakersDelegationList())
+	cmd.AddCommand(CmdAccountDelegationList())
+	cmd.AddCommand(CmdAccountUnbondings())
+
+	// DELEGATION
 	cmd.AddCommand(CmdStakersByPoolAndDelegator())
+	cmd.AddCommand(CmdDelegatorsByPoolAndStaker())
 
 	// this line is used by starport scaffolding # 1
 

@@ -12,6 +12,7 @@ option go_package = "github.com/KYVENetwork/chain/x/registry/types";
 
 // Query defines the gRPC registry querier service.
 service Query {
+
   // PARAMS
 
   // Parameters queries the parameters of the module.

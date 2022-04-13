@@ -6,23 +6,17 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 )
 
 var _ = strconv.Itoa(0)
 
-func CmdStakeInfo() *cobra.Command {
+func CmdParams() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "stake-info [pool-id] [staker]",
-		Short: "Query stake_info",
-		Args:  cobra.ExactArgs(2),
+		Use:   "params",
+		Short: "Query params",
+		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			reqPoolId, err := cast.ToUint64E(args[2])
-			if err != nil {
-				return err
-			}
-			reqStaker := args[1]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -31,12 +25,9 @@ func CmdStakeInfo() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryStakeInfoRequest{
-				PoolId: reqPoolId,
-				Staker: reqStaker,
-			}
+			params := &types.QueryParamsRequest{}
 
-			res, err := queryClient.StakeInfo(cmd.Context(), params)
+			res, err := queryClient.Params(cmd.Context(), params)
 			if err != nil {
 				return err
 			}
