@@ -313,8 +313,18 @@ func (k msgServer) SubmitBundleProposal(
 			types.EmitSlashEvent(ctx, pool.Id, voter, slashAmount)
 		}
 
+		var slashAmount uint64
+
 		// Partially slash the uploader.
-		slashAmount := k.slashStaker(ctx, &pool, pool.BundleProposal.Uploader, k.UploadSlash(ctx))
+		if pool.BundleProposal.BundleId == types.NO_DATA_BUNDLE {
+			// Slash uploader with timeout slash if bundle was of type NO_DATA_BUNDLE
+			slashAmount = k.slashStaker(ctx, &pool, pool.BundleProposal.Uploader, k.TimeoutSlash(ctx))
+		} else {
+			// Slash uploader with upload slash if bundle was of type ARWEAVE_BUNDLE
+			slashAmount = k.slashStaker(ctx, &pool, pool.BundleProposal.Uploader, k.UploadSlash(ctx))
+		}
+
+		// emit slash event
 		types.EmitSlashEvent(ctx, pool.Id, pool.BundleProposal.Uploader, slashAmount)
 
 		// Update the current lowest staker.
