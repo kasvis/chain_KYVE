@@ -266,7 +266,7 @@ func (k msgServer) SubmitBundleProposal(
 		}
 
 		// Send payout to uploader.
-		errTransfer := k.transferToAddress(ctx, pool.BundleProposal.Uploader, uploaderPayout)
+		errTransfer := k.TransferToAddress(ctx, pool.BundleProposal.Uploader, uploaderPayout)
 		if errTransfer != nil {
 			return nil, errTransfer
 		}
