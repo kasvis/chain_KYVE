@@ -50,12 +50,12 @@ func (k msgServer) SubmitBundleProposal(
 	// TODO: resubmit NO_DATA_BUNDLE
 	if pool.BundleProposal.BundleId == types.NO_DATA_BUNDLE && pool.BundleProposal.Uploader == msg.Creator {
 		// Check if bundle id is an ARWEAVE_BUNDLE
-		if msg.BundleId == "" || msg.BundleId == types.NO_DATA_BUNDLE {
+		if msg.BundleId == types.NO_QUORUM_BUNDLE || msg.BundleId == types.NO_DATA_BUNDLE  {
 			return nil, types.ErrInvalidArgs
 		}
 
 		// Validate bundle args
-		if msg.BundleSize != 0 || msg.ByteSize != 0 {
+		if msg.BundleSize == 0 || msg.ByteSize == 0 {
 			return nil, types.ErrInvalidArgs
 		}
 
