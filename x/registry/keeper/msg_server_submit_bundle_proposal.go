@@ -47,7 +47,7 @@ func (k msgServer) SubmitBundleProposal(
 		return nil, types.ErrInvalidArgs
 	}
 
-	// TODO: resubmit NO_DATA_BUNDLE
+	// resubmit NO_DATA_BUNDLE
 	if pool.BundleProposal.BundleId == types.NO_DATA_BUNDLE && pool.BundleProposal.Uploader == msg.Creator {
 		// Check if bundle id is an ARWEAVE_BUNDLE
 		if msg.BundleId == types.NO_QUORUM_BUNDLE || msg.BundleId == types.NO_DATA_BUNDLE  {
@@ -120,21 +120,19 @@ func (k msgServer) SubmitBundleProposal(
 
 			// keep the BundleProposal
 			// just replace the nextUploader and the createdAt time.
-			pool.BundleProposal.NextUploader = k.getNextUploaderByRandom(ctx, &pool, true)
 			pool.BundleProposal.CreatedAt = uint64(ctx.BlockTime().Unix())
-
+			// select next_uploader from voters and uploader
+			candidates := append(append(pool.BundleProposal.VotersValid, pool.BundleProposal.VotersInvalid...), pool.BundleProposal.Uploader)
+			pool.BundleProposal.NextUploader = k.getNextUploaderByRandom(ctx, &pool, candidates)
 		} else {
 			// If consensus wasn't reached, we drop the bundle and emit an event.
 			types.EmitBundleDroppedQuorumNotReachedEvent(ctx, &pool)
 
 			pool.BundleProposal = &types.BundleProposal{
-				NextUploader: k.getNextUploaderByRandom(ctx, &pool, false),
+				NextUploader: k.getNextUploaderByRandom(ctx, &pool, pool.Stakers),
 				FromHeight:   pool.BundleProposal.FromHeight,
-				// Reset ToHeight also to fromHeight as uploader needs to fetch the block again.
 				ToHeight:  pool.BundleProposal.FromHeight,
 				CreatedAt: uint64(ctx.BlockTime().Unix()),
-				// Set empty bundle id to indicate dropped bundle
-				BundleId: "",
 			}
 		}
 
@@ -155,7 +153,7 @@ func (k msgServer) SubmitBundleProposal(
 	if pool.BundleProposal.BundleId == "" {
 		pool.BundleProposal = &types.BundleProposal{
 			Uploader:     msg.Creator,
-			NextUploader: k.getNextUploaderByRandom(ctx, &pool, false),
+			NextUploader: k.getNextUploaderByRandom(ctx, &pool, pool.Stakers),
 			BundleId:     msg.BundleId,
 			ByteSize:     msg.ByteSize,
 			FromHeight:   pool.BundleProposal.ToHeight,
@@ -281,10 +279,13 @@ func (k msgServer) SubmitBundleProposal(
 		// Subtract bundle reward from the pool's total funds.
 		pool.TotalFunds -= bundleReward
 
-		// Partially slash all nodes who voted incorrectly.
-		for _, voter := range pool.BundleProposal.VotersInvalid {
-			slashAmount := k.slashStaker(ctx, &pool, voter, k.VoteSlash(ctx))
-			types.EmitSlashEvent(ctx, pool.Id, voter, slashAmount)
+		// Only slash with vote slash if bundle is of type ARWEAVE_BUNDLE
+		if pool.BundleProposal.BundleId != types.NO_DATA_BUNDLE {
+			// Partially slash all nodes who voted incorrectly.
+			for _, voter := range pool.BundleProposal.VotersInvalid {
+				slashAmount := k.slashStaker(ctx, &pool, voter, k.VoteSlash(ctx))
+				types.EmitSlashEvent(ctx, pool.Id, voter, slashAmount)
+			}
 		}
 
 		// Send payout to treasury.
@@ -320,10 +321,13 @@ func (k msgServer) SubmitBundleProposal(
 		// Emit a valid bundle event.
 		types.EmitBundleValidEvent(ctx, &pool, bundleReward)
 
+		// select next_uploader from voters and uploader
+		candidates := append(append(pool.BundleProposal.VotersValid, pool.BundleProposal.VotersInvalid...), pool.BundleProposal.Uploader)
+
 		// Set submitted bundle as new bundle proposal and select new next_uploader
 		pool.BundleProposal = &types.BundleProposal{
 			Uploader:     msg.Creator,
-			NextUploader: k.getNextUploaderByRandom(ctx, &pool, false),
+			NextUploader: k.getNextUploaderByRandom(ctx, &pool, candidates),
 			BundleId:     msg.BundleId,
 			ByteSize:     msg.ByteSize,
 			FromHeight:   pool.BundleProposal.ToHeight,
@@ -335,10 +339,13 @@ func (k msgServer) SubmitBundleProposal(
 
 		return &types.MsgSubmitBundleProposalResponse{}, nil
 	} else if invalid {
-		// Partially slash all nodes who voted incorrectly.
-		for _, voter := range pool.BundleProposal.VotersValid {
-			slashAmount := k.slashStaker(ctx, &pool, voter, k.VoteSlash(ctx))
-			types.EmitSlashEvent(ctx, pool.Id, voter, slashAmount)
+		// Only slash with vote slash if bundle is of type ARWEAVE_BUNDLE
+		if pool.BundleProposal.BundleId != types.NO_DATA_BUNDLE {
+			// Partially slash all nodes who voted incorrectly.
+			for _, voter := range pool.BundleProposal.VotersValid {
+				slashAmount := k.slashStaker(ctx, &pool, voter, k.VoteSlash(ctx))
+				types.EmitSlashEvent(ctx, pool.Id, voter, slashAmount)
+			}
 		}
 
 		var slashAmount uint64
