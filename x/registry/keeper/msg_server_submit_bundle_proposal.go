@@ -50,7 +50,7 @@ func (k msgServer) SubmitBundleProposal(
 	// resubmit NO_DATA_BUNDLE
 	if pool.BundleProposal.BundleId == types.NO_DATA_BUNDLE && pool.BundleProposal.Uploader == msg.Creator {
 		// Check if bundle id is an ARWEAVE_BUNDLE
-		if msg.BundleId == types.NO_QUORUM_BUNDLE || msg.BundleId == types.NO_DATA_BUNDLE  {
+		if msg.BundleId == types.NO_QUORUM_BUNDLE || msg.BundleId == types.NO_DATA_BUNDLE {
 			return nil, types.ErrInvalidArgs
 		}
 
@@ -122,8 +122,7 @@ func (k msgServer) SubmitBundleProposal(
 			// just replace the nextUploader and the createdAt time.
 			pool.BundleProposal.CreatedAt = uint64(ctx.BlockTime().Unix())
 			// select next_uploader from voters and uploader
-			candidates := append(append(pool.BundleProposal.VotersValid, pool.BundleProposal.VotersInvalid...), pool.BundleProposal.Uploader)
-			pool.BundleProposal.NextUploader = k.getNextUploaderByRandom(ctx, &pool, candidates)
+			pool.BundleProposal.NextUploader = k.getNextUploaderByRandom(ctx, &pool, pool.Stakers)
 		} else {
 			// If consensus wasn't reached, we drop the bundle and emit an event.
 			types.EmitBundleDroppedQuorumNotReachedEvent(ctx, &pool)
@@ -131,8 +130,8 @@ func (k msgServer) SubmitBundleProposal(
 			pool.BundleProposal = &types.BundleProposal{
 				NextUploader: k.getNextUploaderByRandom(ctx, &pool, pool.Stakers),
 				FromHeight:   pool.BundleProposal.FromHeight,
-				ToHeight:  pool.BundleProposal.FromHeight,
-				CreatedAt: uint64(ctx.BlockTime().Unix()),
+				ToHeight:     pool.BundleProposal.FromHeight,
+				CreatedAt:    uint64(ctx.BlockTime().Unix()),
 			}
 		}
 
@@ -321,13 +320,10 @@ func (k msgServer) SubmitBundleProposal(
 		// Emit a valid bundle event.
 		types.EmitBundleValidEvent(ctx, &pool, bundleReward)
 
-		// select next_uploader from voters and uploader
-		candidates := append(append(pool.BundleProposal.VotersValid, pool.BundleProposal.VotersInvalid...), pool.BundleProposal.Uploader)
-
 		// Set submitted bundle as new bundle proposal and select new next_uploader
 		pool.BundleProposal = &types.BundleProposal{
 			Uploader:     msg.Creator,
-			NextUploader: k.getNextUploaderByRandom(ctx, &pool, candidates),
+			NextUploader: k.getNextUploaderByRandom(ctx, &pool, pool.Stakers),
 			BundleId:     msg.BundleId,
 			ByteSize:     msg.ByteSize,
 			FromHeight:   pool.BundleProposal.ToHeight,
