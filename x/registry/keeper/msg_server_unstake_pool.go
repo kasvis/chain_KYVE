@@ -27,6 +27,25 @@ func (k msgServer) UnstakePool(
 		return nil, sdkErrors.Wrapf(sdkErrors.ErrLogic, "Uploader and next uploader can't unstake.")
 	}
 
+	// Check if the sender has already voted on the current bundle.
+	// TODO: Move to a custom error type.
+	hasVotedValid, hasVotedInvalid := false, false
+
+	for _, voter := range pool.BundleProposal.VotersValid {
+		if msg.Creator == voter {
+			hasVotedValid = true
+		}
+	}
+	for _, voter := range pool.BundleProposal.VotersInvalid {
+		if msg.Creator == voter {
+			hasVotedInvalid = true
+		}
+	}
+
+	if hasVotedValid || hasVotedInvalid {
+		return nil, sdkErrors.Wrapf(sdkErrors.ErrLogic, "Sender has already voted so can't unstake.")
+	}
+
 	// Check if the sender is a staker in this pool.
 	staker, isStaker := k.GetStaker(ctx, msg.Creator, msg.Id)
 	if !isStaker {
