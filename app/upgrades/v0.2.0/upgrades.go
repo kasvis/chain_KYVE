@@ -24,7 +24,7 @@ func CreateUpgradeHandler(
 		}
 
 		// Iterate over queue and handle all entries.
-		for i := unbondingState.LowIndex; i < unbondingState.HighIndex; i++ {
+		for i := unbondingState.LowIndex; i <= unbondingState.HighIndex; i++ {
 			// Fetch the current entry.
 			unbondingEntry, found := registryKeeper.GetUnbondingEntries(ctx, i)
 			if !found {
@@ -39,7 +39,10 @@ func CreateUpgradeHandler(
 					registryKeeper.PanicHalt(ctx, "Not enough money in registry module: "+err.Error())
 				}
 			}
+
+			registryKeeper.RemoveUnbondingEntries(ctx, &unbondingEntry)
 		}
+		registryKeeper.RemoveUnbondingState(ctx)
 
 		// Fix overflow in state of user kyve13xzj5e568n4kwe76ayzmzzuraz6c9vnaslrn3t and restore integrity
 
@@ -59,6 +62,9 @@ func CreateUpgradeHandler(
 		registryKeeper.RemoveStaker(ctx, "kyve13xzj5e568n4kwe76ayzmzzuraz6c9vnaslrn3t", 1)
 
 		pool, _ := registryKeeper.GetPool(ctx, 1)
+
+		// Correct pool stake by adding the incorrect amount back and removing the correct amount
+		pool.TotalStake = pool.TotalStake + uint64(19_312_000_000_000) - uint64(18_026_400_000_000)
 
 		var stakerIndex = -1
 		for i, v := range pool.Stakers {
