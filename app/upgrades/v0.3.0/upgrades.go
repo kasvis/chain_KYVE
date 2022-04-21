@@ -20,9 +20,10 @@ func CreateUpgradeHandler(
 
 		for _, pool := range pools {
 
-			fmt.Printf("Fix Pool: %s", pool.Name)
+			fmt.Printf("Fix Pool: %s\n", pool.Name)
 
 			totalStake := uint64(0)
+			totalFunds := uint64(0)
 
 			for _, stakerAddress := range pool.Stakers {
 				staker, found := registryKeeper.GetStaker(ctx, stakerAddress, pool.Id)
@@ -31,8 +32,16 @@ func CreateUpgradeHandler(
 				}
 				totalStake += staker.Amount
 			}
+			for _, funderAddress := range pool.Funders {
+				funder, found := registryKeeper.GetFunder(ctx, funderAddress, pool.Id)
+				if !found {
+					panic("Error: Unexpected Error; Funder does not exist")
+				}
+				totalFunds += funder.Amount
+			}
 
 			pool.TotalStake = totalStake
+			pool.TotalFunds = totalFunds
 
 			registryKeeper.SetPool(ctx, pool)
 		}
