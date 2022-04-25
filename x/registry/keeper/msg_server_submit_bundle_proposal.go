@@ -47,32 +47,35 @@ func (k msgServer) SubmitBundleProposal(
 		return nil, types.ErrInvalidArgs
 	}
 
-	// resubmit NO_DATA_BUNDLE
-	if pool.BundleProposal.BundleId == types.NO_DATA_BUNDLE && pool.BundleProposal.Uploader == msg.Creator {
-		// Check if bundle id is an ARWEAVE_BUNDLE
-		if msg.BundleId == types.NO_QUORUM_BUNDLE || msg.BundleId == types.NO_DATA_BUNDLE {
-			return nil, types.ErrInvalidArgs
+	// Only allow resubmitting bundles if upload_interval was not reached yet
+	if uint64(ctx.BlockTime().Unix()) < (pool.BundleProposal.CreatedAt + pool.UploadInterval) {
+		// resubmit NO_DATA_BUNDLE
+		if pool.BundleProposal.BundleId == types.NO_DATA_BUNDLE && pool.BundleProposal.Uploader == msg.Creator {
+			// Check if bundle id is an ARWEAVE_BUNDLE
+			if msg.BundleId == types.NO_QUORUM_BUNDLE || msg.BundleId == types.NO_DATA_BUNDLE {
+				return nil, types.ErrInvalidArgs
+			}
+
+			// Validate bundle args
+			if msg.BundleSize == 0 || msg.ByteSize == 0 {
+				return nil, types.ErrInvalidArgs
+			}
+
+			// resubmit ARWEAVE_BUNDLE
+			pool.BundleProposal = &types.BundleProposal{
+				Uploader:     pool.BundleProposal.Uploader,
+				NextUploader: pool.BundleProposal.NextUploader,
+				BundleId:     msg.BundleId,
+				ByteSize:     msg.ByteSize,
+				FromHeight:   pool.BundleProposal.ToHeight,
+				ToHeight:     pool.BundleProposal.ToHeight + msg.BundleSize,
+				CreatedAt:    uint64(ctx.BlockTime().Unix()),
+			}
+
+			k.SetPool(ctx, pool)
+
+			return &types.MsgSubmitBundleProposalResponse{}, nil
 		}
-
-		// Validate bundle args
-		if msg.BundleSize == 0 || msg.ByteSize == 0 {
-			return nil, types.ErrInvalidArgs
-		}
-
-		// resubmit ARWEAVE_BUNDLE
-		pool.BundleProposal = &types.BundleProposal{
-			Uploader:     pool.BundleProposal.Uploader,
-			NextUploader: pool.BundleProposal.NextUploader,
-			BundleId:     msg.BundleId,
-			ByteSize:     msg.ByteSize,
-			FromHeight:   pool.BundleProposal.ToHeight,
-			ToHeight:     pool.BundleProposal.ToHeight + msg.BundleSize,
-			CreatedAt:    uint64(ctx.BlockTime().Unix()),
-		}
-
-		k.SetPool(ctx, pool)
-
-		return &types.MsgSubmitBundleProposalResponse{}, nil
 	}
 
 	// Check if upload_interval has been surpassed
