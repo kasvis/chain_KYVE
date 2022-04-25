@@ -56,13 +56,6 @@ func (k Keeper) CanPropose(goCtx context.Context, req *types.QueryCanProposeRequ
 		}, nil
 	}
 
-	if pool.BundleProposal.BundleId == types.NO_DATA_BUNDLE && pool.BundleProposal.Uploader == req.Proposer {
-		return &types.QueryCanProposeResponse{
-			Possible: true,
-			Reason:   "RESUBMIT_ARWEAVE_BUNDLE",
-		}, nil
-	}
-
 	// Check if upload interval has been surpassed
 	if uint64(ctx.BlockTime().Unix()) < (pool.BundleProposal.CreatedAt + pool.UploadInterval) {
 		return &types.QueryCanProposeResponse{
