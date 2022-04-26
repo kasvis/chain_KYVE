@@ -47,6 +47,11 @@ func (k msgServer) SubmitBundleProposal(
 		return nil, types.ErrInvalidArgs
 	}
 
+	// Validate from height
+	if msg.FromHeight != pool.BundleProposal.ToHeight {
+		return nil, types.ErrFromHeight
+	}
+
 	// Only allow resubmitting bundles if upload_interval was not reached yet
 	if uint64(ctx.BlockTime().Unix()) < (pool.BundleProposal.CreatedAt + pool.UploadInterval) {
 		// resubmit NO_DATA_BUNDLE
@@ -143,10 +148,15 @@ func (k msgServer) SubmitBundleProposal(
 		return &types.MsgSubmitBundleProposalResponse{}, nil
 	}
 
-	// Check args of NO_DATA_BUNDLE
+	// Check args of bundle types
 	if msg.BundleId == types.NO_DATA_BUNDLE {
 		// Validate bundle args
 		if msg.BundleSize != 0 || msg.ByteSize != 0 {
+			return nil, types.ErrInvalidArgs
+		}
+	} else {
+		// Validate bundle args
+		if msg.BundleSize == 0 || msg.ByteSize == 0 {
 			return nil, types.ErrInvalidArgs
 		}
 	}
